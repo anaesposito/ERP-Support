@@ -15,7 +15,7 @@ export const EXAMPLE_CASES: ExampleCase[] = [
       mensajeError: '',
       usuariosAfectados: 'Equipo de logística y almacén central (aprox. 4 personas)',
       tieneAlternativa: 'no',
-      tono: 'tecnico',
+      tono: 'profesional',
     },
   },
   {
@@ -32,7 +32,7 @@ export const EXAMPLE_CASES: ExampleCase[] = [
         'ERR-FIN-304: El periodo contable correspondiente a la fecha de contabilización se encuentra cerrado o bloqueado para contabilizaciones directas de proveedores.',
       usuariosAfectados: '1 usuario (Cuentas por Pagar)',
       tieneAlternativa: 'si',
-      tono: 'sencillo',
+      tono: 'conciliador',
     },
   },
   {
@@ -82,7 +82,7 @@ export const EXAMPLE_CASES: ExampleCase[] = [
       mensajeError: '',
       usuariosAfectados: '1 usuario de sucursal',
       tieneAlternativa: 'desconocido',
-      tono: 'sencillo',
+      tono: 'conciliador',
     },
   },
   {

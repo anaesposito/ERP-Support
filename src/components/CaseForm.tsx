@@ -45,9 +45,9 @@ const MODULES: { value: ERPModule; label: string; desc: string }[] = [
 ];
 
 const TONES: { value: Tone; label: string; desc: string }[] = [
-  { value: 'cercano', label: 'Cercano (Recomendado Nagora)', desc: 'Cálido, empático y tranquilizador' },
-  { value: 'sencillo', label: 'Sencillo y directo', desc: 'Claro, sin rodeos ni jerga técnica' },
-  { value: 'tecnico', label: 'Técnico y analítico', desc: 'Formal para personal especializado de sistemas' },
+  { value: 'profesional', label: 'Profesional', desc: 'Formal, claro y respetuoso' },
+  { value: 'cercano', label: 'Cercano', desc: 'Cálido, simple y empático' },
+  { value: 'conciliador', label: 'Conciliador', desc: 'Valida el malestar y busca reducir el conflicto' },
 ];
 
 export const CaseForm: React.FC<CaseFormProps> = ({
@@ -264,6 +264,7 @@ export const CaseForm: React.FC<CaseFormProps> = ({
             <MessageSquare className="w-4 h-4 text-[#3A9898]" />
             <span>Tono para la respuesta que vamos a sugerir</span>
           </label>
+          <p className="text-xs text-slate-500 mb-2">Elegí un tono y presioná Analizar caso para generar la respuesta con ese estilo.</p>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
             {TONES.map((t) => {
               const selected = formData.tono === t.value;

@@ -18,6 +18,10 @@ Fecha: ${dateStr}
 1. RESUMEN DEL PROBLEMA:
 ${result.resumenProblema}
 
+RESOLUCIÓN DEL CASO:
+${result.resolucion.automatica ? 'Puede resolverse automáticamente' : 'Requiere revisión humana'}
+${result.resolucion.motivo}
+
 -----------------------------------------------------
 2. MÓDULO Y PROCESO AFECTADOS:
 - Módulo: ${result.moduloProcesoAfectados.modulo}

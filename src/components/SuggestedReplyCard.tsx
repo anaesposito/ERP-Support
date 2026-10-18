@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Tone } from '../types/erp';
 import { MessageSquare, Copy, Check, Edit3, RotateCcw } from 'lucide-react';
 
@@ -14,6 +14,12 @@ export const SuggestedReplyCard: React.FC<SuggestedReplyCardProps> = ({
   const [replyText, setReplyText] = useState(initialReply);
   const [isEditing, setIsEditing] = useState(false);
   const [copied, setCopied] = useState(false);
+
+  useEffect(() => {
+    setReplyText(initialReply);
+    setIsEditing(false);
+    setCopied(false);
+  }, [initialReply, tone]);
 
   const handleCopy = async () => {
     try {
@@ -32,8 +38,8 @@ export const SuggestedReplyCard: React.FC<SuggestedReplyCardProps> = ({
 
   const toneLabel = {
     cercano: 'Tono cercano (empático, comprensivo y sereno)',
-    sencillo: 'Tono sencillo (claro y directo para el día a día)',
-    tecnico: 'Tono técnico (preciso y orientado a sistemas)',
+    profesional: 'Tono profesional (formal, claro y respetuoso)',
+    conciliador: 'Tono conciliador (empatía y reducción del conflicto)',
   }[tone];
 
   return (

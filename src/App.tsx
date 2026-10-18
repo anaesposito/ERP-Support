@@ -31,6 +31,7 @@ const INITIAL_FORM: AnalysisRequest = {
 export default function App() {
   const [formData, setFormData] = useState<AnalysisRequest>(INITIAL_FORM);
   const [analysisResult, setAnalysisResult] = useState<ERPAnalysisResult | null>(null);
+  const [analyzedRequest, setAnalyzedRequest] = useState<AnalysisRequest>(INITIAL_FORM);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [apiConfigured, setApiConfigured] = useState<boolean | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -83,9 +84,11 @@ export default function App() {
     setValidationError(null);
     setErrorMessage(null);
     setIsLoading(true);
+    setAnalysisResult(null);
 
     try {
       const response = await fetch('/api/analyze', {
+        signal: AbortSignal.timeout(50000),
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -109,6 +112,7 @@ export default function App() {
       }
 
       if (data.success && data.data) {
+        setAnalyzedRequest({ ...formData });
         setAnalysisResult(data.data);
         setTimeout(() => {
           const resultsEl = document.getElementById('analysis-results-section');
@@ -122,7 +126,9 @@ export default function App() {
         );
       }
     } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : 'Error de conexión con el servidor';
+      const msg = err instanceof Error && (err.name === 'TimeoutError' || err.name === 'AbortError')
+        ? 'El análisis tardó demasiado. Tu mensaje sigue en el formulario; podés reintentarlo'
+        : err instanceof Error ? err.message : 'Error de conexión con el servidor';
       setErrorMessage(
         `No fue posible comunicarse con el servicio de análisis (${msg}). Por favor, revisá tu conexión e intentá de nuevo.`
       );
@@ -240,7 +246,7 @@ export default function App() {
             </div>
 
             <AnalysisResults
-              request={formData}
+              request={analyzedRequest}
               result={analysisResult}
               onNewAnalysis={() => {
                 window.scrollTo({ top: 0, behavior: 'smooth' });
