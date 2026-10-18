@@ -348,7 +348,7 @@ Generá el dictamen estructurado en JSON validando cada dimensión, detectando e
       throw lastError;
     }
 
-    const responseText = response.text;
+    const responseText = response?.text;
     if (!responseText) {
       return res.status(502).json({
         error: 'EMPTY_AI_RESPONSE',
