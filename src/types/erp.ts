@@ -7,7 +7,7 @@ export type ERPModule =
   | 'recursos_humanos'
   | 'otro';
 
-export type Tone = 'tecnico' | 'sencillo' | 'cercano';
+export type Tone = 'profesional' | 'cercano' | 'conciliador';
 
 export type CaseType = 'consulta' | 'incidente' | 'solicitud de mejora' | 'problema de acceso';
 
@@ -36,6 +36,10 @@ export interface AnalysisRequest {
 }
 
 export interface ERPAnalysisResult {
+  resolucion: {
+    automatica: boolean;
+    motivo: string;
+  };
   resumenProblema: string;
   moduloProcesoAfectados: {
     modulo: string;

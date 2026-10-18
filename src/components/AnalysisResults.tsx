@@ -90,6 +90,17 @@ export const AnalysisResults: React.FC<AnalysisResultsProps> = ({
 
   return (
     <div className="space-y-6">
+      <div role="status" className="bg-white rounded-3xl border-2 border-[#3A9898]/40 p-6 space-y-2">
+        <h3 className="text-base font-bold text-slate-900">
+          {result.resolucion.automatica
+            ? 'Puede resolverse automáticamente'
+            : 'Requiere revisión humana'}
+        </h3>
+        <p className="text-sm text-slate-700">{result.resolucion.motivo}</p>
+        <p className="text-xs text-slate-500">
+          Esta indicación recomienda cómo atender el caso. No se envían mensajes ni se ejecutan cambios automáticamente.
+        </p>
+      </div>
       {/* Top Action Bar */}
       <div className="bg-white rounded-3xl border border-[#267B7E]/20 shadow-sm p-5 sm:p-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
