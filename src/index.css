@@ -1,0 +1,24 @@
+@import "tailwindcss";
+
+@theme {
+  --color-nagora-dark: #267B7E;
+  --color-nagora-teal: #3A9898;
+  --color-nagora-mint: #8ADCAE;
+  --color-nagora-warm: #F8F7F2;
+  --color-nagora-coral: #F08A78;
+}
+
+:root {
+  --nagora-dark: #267B7E;
+  --nagora-teal: #3A9898;
+  --nagora-mint: #8ADCAE;
+  --nagora-warm: #F8F7F2;
+  --nagora-coral: #F08A78;
+}
+
+body {
+  background-color: #F8F7F2;
+  color: #1F2937;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}

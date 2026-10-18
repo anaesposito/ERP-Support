@@ -1,0 +1,6 @@
+{
+  "name": "Asistente IA de Soporte ERP",
+  "description": "Herramienta inteligente para el análisis de incidentes, consultas y solicitudes ERP, identificación de procesos afectados, próximos pasos seguros y redacción de respuestas.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
