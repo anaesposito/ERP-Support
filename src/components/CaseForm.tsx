@@ -1,6 +1,6 @@
 import React from 'react';
 import { ArrowRight, Loader2, Lock, RotateCcw } from 'lucide-react';
-import type { AnalysisRequest, ERPModule, Tone } from '../types/erp';
+import type { AnalysisRequest, ERPModule, Priority } from '../types/erp';
 
 interface Props {
   formData: AnalysisRequest;
@@ -16,10 +16,10 @@ const modules: {value: ERPModule; label: string}[] = [
   {value: 'compras', label: 'Compras y proveedores'}, {value: 'produccion', label: 'Producción'},
   {value: 'recursos_humanos', label: 'Equipo y personal'},
 ];
-const tones: {value: Tone; label: string; description: string}[] = [
-  {value: 'profesional', label: 'Profesional', description: 'Formal y preciso'},
-  {value: 'cercano', label: 'Cercano', description: 'Simple y cálido'},
-  {value: 'conciliador', label: 'Conciliador', description: 'Empático y sereno'},
+const levels: {value: Priority; label: string; description: string}[] = [
+  {value: 'baja', label: 'Bajo', description: 'Tengo una duda o un inconveniente que me permite seguir trabajando.'},
+  {value: 'media', label: 'Medio', description: 'Una tarea importante está afectada, pero puedo continuar de otra manera.'},
+  {value: 'alta', label: 'Alto', description: 'No puedo continuar con una tarea esencial o el problema afecta a varias personas.'},
 ];
 const field = 'w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#3A9898]/30 focus:border-[#3A9898] disabled:opacity-60';
 
@@ -55,15 +55,24 @@ export const CaseForm: React.FC<Props> = ({formData, onChange, onSubmit, onClear
       </div>
     </details>
     <fieldset disabled={isLoading}>
-      <legend className="text-sm font-semibold text-slate-800 mb-3">¿Cómo preferís que te respondamos?</legend>
-      <div className="grid sm:grid-cols-3 gap-3">{tones.map(tone => (
-        <label key={tone.value} className={`flex items-start gap-2 cursor-pointer p-3 rounded-xl border ${formData.tono === tone.value ? 'border-[#3A9898] bg-[#3A9898]/5' : 'border-slate-200'}`}>
-          <input type="radio" name="tone" value={tone.value} checked={formData.tono === tone.value} onChange={() => onChange({tono:tone.value})} className="mt-1 accent-[#267B7E]" />
-          <span><span className="block text-sm font-semibold text-slate-800">{tone.label}</span><span className="block text-xs text-slate-500 mt-1">{tone.description}</span></span>
+      <legend className="text-sm font-semibold text-slate-800 mb-3">¿Qué tan crítico es tu problema?</legend>
+      <div className="grid sm:grid-cols-3 gap-3">{levels.map(level => (
+        <label key={level.value} className={`flex items-start gap-2 cursor-pointer p-3 rounded-xl border ${formData.criticidad === level.value ? 'border-[#3A9898] bg-[#3A9898]/5' : 'border-slate-200'}`}>
+          <input type="radio" name="criticality" value={level.value} checked={formData.criticidad === level.value} onChange={() => onChange({criticidad:level.value})} className="mt-1 accent-[#267B7E]" />
+          <span><span className="block text-sm font-semibold text-slate-800">{level.label}</span><span className="block text-xs text-slate-500 mt-1">{level.description}</span></span>
         </label>
       ))}</div>
-      <p className="text-xs text-slate-500 mt-3">Si cambiás el estilo después de recibir una respuesta, volvé a consultar para actualizarla.</p>
+      <p className="text-xs text-slate-500 mt-3">Elegí el nivel que mejor refleje cómo te afecta. Lo tendremos en cuenta junto con la descripción para orientar tu consulta.</p>
     </fieldset>
+    <section aria-labelledby="support-process" className="rounded-2xl bg-[#3A9898]/5 border border-[#3A9898]/20 p-5">
+      <h2 id="support-process" className="text-base font-bold text-slate-900">¿Cómo vamos a ayudarte?</h2>
+      <ol className="list-decimal pl-5 space-y-3 mt-3 text-sm text-slate-700 leading-relaxed">
+        <li><strong>Revisamos tu consulta.</strong> Al presionar Recibir ayuda, analizamos lo que nos contás y el impacto que seleccionaste.</li>
+        <li><strong>Te orientamos en esta pantalla.</strong> Vas a recibir una respuesta y pasos concretos. Si falta información, te indicaremos qué datos agregar.</li>
+        <li><strong>Si necesitás atención de una persona, te indicamos cómo seguir.</strong> Podrás guardar el resumen y compartirlo por el canal habitual de soporte de tu empresa, para que revisen tu caso y acuerden con vos cómo continuar.</li>
+      </ol>
+      <p className="text-xs text-slate-500 mt-4">Desde esta página no se envían correos ni se realizan llamadas, y no se crea un ticket automáticamente. La respuesta inicial se muestra aquí; para el contacto personal, utilizá tu canal de soporte habitual.</p>
+    </section>
     <div className="flex flex-col sm:flex-row-reverse gap-3 sm:items-center sm:justify-between pt-2">
       <button type="submit" disabled={isLoading || !formData.descripcion.trim()} className="flex items-center justify-center gap-2 bg-[#267B7E] hover:bg-[#206568] text-white px-6 py-3.5 rounded-xl font-semibold text-sm disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
         {isLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <ArrowRight className="w-4 h-4" />}{isLoading ? 'Estamos revisando tu consulta…' : 'Recibir ayuda'}

@@ -53,6 +53,7 @@ export const AnalysisResults: React.FC<Props> = ({request, result, onNewAnalysis
       <div className="space-y-5 mt-5 text-sm text-slate-700">
         <div><h3 className="font-bold text-slate-900 mb-2">Lo que entendimos</h3><p>{result.resumenProblema}</p></div>
         <dl className="grid sm:grid-cols-2 gap-4">
+          {request.criticidad && <div><dt className="font-semibold text-slate-900">Impacto que nos indicaste</dt><dd className="mt-1">{{baja:'Bajo', media:'Medio', alta:'Alto'}[request.criticidad]}</dd></div>}
           <div><dt className="font-semibold text-slate-900">Tipo de consulta</dt><dd className="mt-1 capitalize">{result.tipoCaso}</dd></div>
           <div><dt className="font-semibold text-slate-900 mb-2">Urgencia estimada</dt><dd><PriorityBadge priority={result.prioridad} size="sm" /></dd></div>
           <div><dt className="font-semibold text-slate-900">Área relacionada</dt><dd className="mt-1">{result.moduloProcesoAfectados.modulo}</dd></div>

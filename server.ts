@@ -305,15 +305,21 @@ app.post('/api/analyze', async (req, res) => {
       usuariosAfectados,
       tieneAlternativa,
       tono,
+      criticidad,
     } = body;
 
     if (tono && !['profesional', 'cercano', 'conciliador'].includes(tono)) {
       return res.status(400).json({ error: 'INVALID_TONE', message: 'Elegí un tono profesional, cercano o conciliador.' });
     }
 
+    if (criticidad !== undefined && !['baja', 'media', 'alta'].includes(criticidad)) {
+      return res.status(400).json({ error: 'INVALID_CRITICALITY', message: 'Elegí un nivel de criticidad bajo, medio o alto.' });
+    }
+
     const userPrompt = `Analizá el siguiente caso de soporte con los criterios de claridad, empatía y seguridad de Nagora:
 
 [DATOS DEL CASO]
+- Criticidad indicada por la persona: ${criticidad || 'No indicada'}. Considerarla junto con el impacto, las personas afectadas y las alternativas. Explicar la prioridad estimada sin prometer plazos de atención.
 - Módulo indicado: ${modulo || 'No especificado / Otro'}
 - Tono elegido para la respuesta: ${tono || 'cercano'}
 - Mensaje o código de error (si aplica): ${mensajeError && mensajeError.trim() ? mensajeError.trim() : 'Ninguno indicado'}
