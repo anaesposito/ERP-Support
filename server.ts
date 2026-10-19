@@ -271,10 +271,6 @@ RESOLUCIÓN OBLIGATORIA DE SITUACIONES CRÍTICAS:
 - La respuesta sugerida debe estar redactada en español argentino/neutro, respetando el tono elegido: profesional = formal, sobrio y respetuoso, sin exclamaciones; cercano = cálido, simple y empático; conciliador = validar el malestar y proponer colaboración sin prometer compensaciones.
 - No inventar nombres de pantallas, botones, políticas ni capacidades del ERP que no estén documentados en el mensaje. Presentar orientaciones generales como tales y pedir aclaraciones si son necesarias.
 - Ser breve: resumen en 1 o 2 oraciones, 2 hipótesis como máximo y 3 pasos concretos. Respuesta sugerida de hasta 100 palabras.
-- EXPERIENCIA DE USUARIO FINAL: quien lee la respuesta es la persona que pide ayuda, no un operador interno. Dirigite a esa persona en segunda persona. No muestres instrucciones para agentes, protocolos internos, consignas académicas, ejemplos de prueba ni lenguaje de evaluación.
-- Los proximosPasos deben ser acciones que esa persona pueda realizar, no tareas para un agente de soporte. No pedir que modifique datos sensibles.
-- La aplicación NO crea tickets, no deriva consultas ni avisa a equipos. Nunca afirmar que un equipo ya está trabajando, que se registró o derivó el caso, ni prometer seguimiento, plazos o resolución. Si requiere revisión, indicar que la persona puede compartir el resumen con su canal habitual de soporte.
-- La respuesta debe reconocer la situación y ofrecer orientación concreta sin prometer que se resolverá. Si faltan datos, explicarlo y pedirlos de manera amable.
 - Devuelve SIEMPRE un JSON válido conforme al esquema requerido.`;
 
 // Analysis endpoint
@@ -305,21 +301,15 @@ app.post('/api/analyze', async (req, res) => {
       usuariosAfectados,
       tieneAlternativa,
       tono,
-      criticidad,
     } = body;
 
     if (tono && !['profesional', 'cercano', 'conciliador'].includes(tono)) {
       return res.status(400).json({ error: 'INVALID_TONE', message: 'Elegí un tono profesional, cercano o conciliador.' });
     }
 
-    if (criticidad !== undefined && !['baja', 'media', 'alta'].includes(criticidad)) {
-      return res.status(400).json({ error: 'INVALID_CRITICALITY', message: 'Elegí un nivel de criticidad bajo, medio o alto.' });
-    }
-
     const userPrompt = `Analizá el siguiente caso de soporte con los criterios de claridad, empatía y seguridad de Nagora:
 
 [DATOS DEL CASO]
-- Criticidad indicada por la persona: ${criticidad || 'No indicada'}. Considerarla junto con el impacto, las personas afectadas y las alternativas. Explicar la prioridad estimada sin prometer plazos de atención.
 - Módulo indicado: ${modulo || 'No especificado / Otro'}
 - Tono elegido para la respuesta: ${tono || 'cercano'}
 - Mensaje o código de error (si aplica): ${mensajeError && mensajeError.trim() ? mensajeError.trim() : 'Ninguno indicado'}
