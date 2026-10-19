@@ -33,7 +33,6 @@ export interface AnalysisRequest {
   usuariosAfectados?: string;
   tieneAlternativa?: WorkaroundStatus;
   tono: Tone;
-  criticidad?: Priority;
 }
 
 export interface ERPAnalysisResult {

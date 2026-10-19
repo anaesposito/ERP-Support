@@ -1,84 +1,336 @@
 import React from 'react';
-import { ArrowRight, Loader2, Lock, RotateCcw } from 'lucide-react';
-import type { AnalysisRequest, ERPModule, Priority } from '../types/erp';
+import {
+  AnalysisRequest,
+  ERPModule,
+  Tone,
+  WorkaroundStatus,
+  ExampleCase,
+} from '../types/erp';
+import {
+  Sparkles,
+  Trash2,
+  AlertCircle,
+  Loader2,
+  Boxes,
+  FileText,
+  BarChart3,
+  HelpCircle,
+  Layers,
+  Users,
+  MessageSquare,
+  ShieldAlert,
+  AlertOctagon,
+  DollarSign,
+} from 'lucide-react';
+import { EXAMPLE_CASES } from '../data/examples';
 
-interface Props {
+interface CaseFormProps {
   formData: AnalysisRequest;
-  onChange: (updates: Partial<AnalysisRequest>) => void;
+  onChange: (newData: Partial<AnalysisRequest>) => void;
   onSubmit: () => void;
   onClear: () => void;
+  onLoadExample: (example: ExampleCase) => void;
   isLoading: boolean;
   validationError: string | null;
 }
-const modules: {value: ERPModule; label: string}[] = [
-  {value: 'otro', label: 'No estoy seguro'}, {value: 'ventas', label: 'Ventas y clientes'},
-  {value: 'finanzas', label: 'Facturación y pagos'}, {value: 'inventario', label: 'Stock e inventario'},
-  {value: 'compras', label: 'Compras y proveedores'}, {value: 'produccion', label: 'Producción'},
-  {value: 'recursos_humanos', label: 'Equipo y personal'},
-];
-const levels: {value: Priority; label: string; description: string}[] = [
-  {value: 'baja', label: 'Bajo', description: 'Tengo una duda o un inconveniente que me permite seguir trabajando.'},
-  {value: 'media', label: 'Medio', description: 'Una tarea importante está afectada, pero puedo continuar de otra manera.'},
-  {value: 'alta', label: 'Alto', description: 'No puedo continuar con una tarea esencial o el problema afecta a varias personas.'},
-];
-const field = 'w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#3A9898]/30 focus:border-[#3A9898] disabled:opacity-60';
 
-export const CaseForm: React.FC<Props> = ({formData, onChange, onSubmit, onClear, isLoading, validationError}) => (
-  <form onSubmit={event => { event.preventDefault(); onSubmit(); }} className="bg-white rounded-3xl border border-slate-200 shadow-sm p-6 sm:p-8 space-y-6">
-    <div>
-      <label htmlFor="case-description" className="block text-base font-bold text-slate-900 mb-2">¿En qué podemos ayudarte?</label>
-      <p id="message-help" className="text-sm text-slate-500 mb-3">Contanos qué estabas intentando hacer y qué ocurrió. También podés pegar el mensaje relacionado con tu consulta.</p>
-      <textarea id="case-description" rows={6} value={formData.descripcion} onChange={e => onChange({descripcion:e.target.value})}
-        placeholder="Describí tu consulta o el inconveniente que estás teniendo…" required disabled={isLoading}
-        aria-describedby={validationError ? 'message-help message-error' : 'message-help'} aria-invalid={Boolean(validationError)}
-        className={`${field} resize-y leading-relaxed`} />
-      {validationError && <p id="message-error" role="alert" className="text-sm text-red-700 mt-2">{validationError}</p>}
-      <p className="flex items-start gap-2 text-xs text-slate-500 mt-3"><Lock className="w-3.5 h-3.5 shrink-0 mt-0.5" />No compartas contraseñas, datos bancarios ni información personal innecesaria. Tu consulta se procesa con asistencia de IA.</p>
-    </div>
-    <div>
-      <label htmlFor="case-module" className="block text-sm font-semibold text-slate-800 mb-2">¿Con qué parte de Nagora está relacionada?</label>
-      <select id="case-module" value={formData.modulo} onChange={e => onChange({modulo:e.target.value as ERPModule})} disabled={isLoading} className={field}>
-        {modules.map(item => <option key={item.value} value={item.value}>{item.label}</option>)}
-      </select>
-    </div>
-    <details className="rounded-2xl border border-slate-200 p-4">
-      <summary className="cursor-pointer text-sm font-semibold text-[#267B7E]">Agregar detalles para recibir una mejor orientación <span className="font-normal text-slate-500">(opcional)</span></summary>
-      <div className="grid sm:grid-cols-2 gap-4 mt-5">
-        <div className="sm:col-span-2"><label htmlFor="case-error" className="block text-sm text-slate-700 mb-2">Si aparece un error, ¿qué dice?</label>
-          <input id="case-error" value={formData.mensajeError || ''} onChange={e => onChange({mensajeError:e.target.value})} disabled={isLoading} className={field} /></div>
-        <div><label htmlFor="case-people" className="block text-sm text-slate-700 mb-2">¿A quiénes les ocurre?</label>
-          <input id="case-people" value={formData.usuariosAfectados || ''} onChange={e => onChange({usuariosAfectados:e.target.value})} disabled={isLoading} className={field} /></div>
-        <div><label htmlFor="case-workaround" className="block text-sm text-slate-700 mb-2">¿Podés seguir trabajando?</label>
-          <select id="case-workaround" value={formData.tieneAlternativa} onChange={e => onChange({tieneAlternativa:e.target.value as AnalysisRequest['tieneAlternativa']})} disabled={isLoading} className={field}>
-            <option value="desconocido">Todavía no lo sé</option><option value="si">Sí, de otra manera</option><option value="no">No, la tarea está detenida</option>
-          </select></div>
+const MODULES: { value: ERPModule; label: string; desc: string }[] = [
+  { value: 'inventario', label: 'Inventario / Stock', desc: 'Existencias, depósitos y movimientos' },
+  { value: 'finanzas', label: 'Finanzas y Caja', desc: 'Facturas, cobranzas y pagos' },
+  { value: 'ventas', label: 'Ventas y Clientes', desc: 'Pedidos, remitos y presupuestos' },
+  { value: 'compras', label: 'Compras y Proveedores', desc: 'Órdenes de compra y recepción' },
+  { value: 'produccion', label: 'Producción', desc: 'Fabricación y recetas de materiales' },
+  { value: 'recursos_humanos', label: 'Equipo y Personal', desc: 'Turnos y novedades de nómina' },
+  { value: 'otro', label: 'Otro / No identificado', desc: 'Consulta general o módulo mixto' },
+];
+
+const TONES: { value: Tone; label: string; desc: string }[] = [
+  { value: 'profesional', label: 'Profesional', desc: 'Formal, claro y respetuoso' },
+  { value: 'cercano', label: 'Cercano', desc: 'Cálido, simple y empático' },
+  { value: 'conciliador', label: 'Conciliador', desc: 'Valida el malestar y busca reducir el conflicto' },
+];
+
+export const CaseForm: React.FC<CaseFormProps> = ({
+  formData,
+  onChange,
+  onSubmit,
+  onClear,
+  onLoadExample,
+  isLoading,
+  validationError,
+}) => {
+  const getExampleIcon = (iconName: string) => {
+    switch (iconName) {
+      case 'Boxes':
+        return <Boxes className="w-4 h-4 text-[#3A9898]" />;
+      case 'FileText':
+        return <FileText className="w-4 h-4 text-[#267B7E]" />;
+      case 'BarChart3':
+        return <BarChart3 className="w-4 h-4 text-purple-600" />;
+      case 'AlertOctagon':
+        return <AlertOctagon className="w-4 h-4 text-[#F08A78]" />;
+      case 'HelpCircle':
+        return <HelpCircle className="w-4 h-4 text-[#3A9898]" />;
+      case 'DollarSign':
+        return <DollarSign className="w-4 h-4 text-[#267B7E]" />;
+      default:
+        return <Sparkles className="w-4 h-4 text-[#3A9898]" />;
+    }
+  };
+
+  const isDescriptionEmpty = !formData.descripcion || formData.descripcion.trim().length === 0;
+
+  return (
+    <div className="bg-white rounded-3xl border border-[#267B7E]/15 shadow-sm p-6 sm:p-8 space-y-7">
+      {/* Examples Header & Badges */}
+      <div>
+        <div className="flex items-center justify-between mb-3">
+          <label className="text-xs font-bold text-[#267B7E] uppercase tracking-wider flex items-center gap-1.5">
+            <Sparkles className="w-3.5 h-3.5 text-[#3A9898]" />
+            Cargar un caso de prueba para probar de inmediato:
+          </label>
+          <span className="text-xs text-slate-400">Elegí uno para autocompletar</span>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+          {EXAMPLE_CASES.map((example) => (
+            <button
+              key={example.id}
+              type="button"
+              onClick={() => onLoadExample(example)}
+              disabled={isLoading}
+              className="text-left p-3.5 rounded-2xl border border-slate-200/90 hover:border-[#3A9898] hover:bg-[#3A9898]/5 transition-all group flex flex-col justify-between disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer bg-slate-50/50"
+            >
+              <div className="flex items-center justify-between gap-2 mb-1.5">
+                <div className="flex items-center gap-2">
+                  <span className="p-1.5 rounded-xl bg-white border border-slate-200/60 group-hover:bg-[#8ADCAE]/20 transition-colors shadow-2xs">
+                    {getExampleIcon(example.icono)}
+                  </span>
+                  <span className="text-xs font-bold text-slate-800 group-hover:text-[#267B7E] line-clamp-1">
+                    {example.titulo}
+                  </span>
+                </div>
+                {example.badge && (
+                  <span
+                    className={`text-[10px] px-2 py-0.5 rounded-full font-semibold shrink-0 ${
+                      example.badge === 'Alerta crítica'
+                        ? 'bg-[#F08A78]/20 text-[#9E3926]'
+                        : example.badge === 'Ambigüedad'
+                        ? 'bg-amber-100 text-amber-800'
+                        : example.badge === 'Aprobación humana'
+                        ? 'bg-purple-100 text-purple-800'
+                        : 'bg-[#8ADCAE]/30 text-[#267B7E]'
+                    }`}
+                  >
+                    {example.badge}
+                  </span>
+                )}
+              </div>
+              <p className="text-[11px] text-slate-500 line-clamp-2 leading-relaxed">
+                {example.subtitulo}
+              </p>
+            </button>
+          ))}
+        </div>
       </div>
-    </details>
-    <fieldset disabled={isLoading}>
-      <legend className="text-sm font-semibold text-slate-800 mb-3">¿Qué tan crítico es tu problema?</legend>
-      <div className="grid sm:grid-cols-3 gap-3">{levels.map(level => (
-        <label key={level.value} className={`flex items-start gap-2 cursor-pointer p-3 rounded-xl border ${formData.criticidad === level.value ? 'border-[#3A9898] bg-[#3A9898]/5' : 'border-slate-200'}`}>
-          <input type="radio" name="criticality" value={level.value} checked={formData.criticidad === level.value} onChange={() => onChange({criticidad:level.value})} className="mt-1 accent-[#267B7E]" />
-          <span><span className="block text-sm font-semibold text-slate-800">{level.label}</span><span className="block text-xs text-slate-500 mt-1">{level.description}</span></span>
-        </label>
-      ))}</div>
-      <p className="text-xs text-slate-500 mt-3">Elegí el nivel que mejor refleje cómo te afecta. Lo tendremos en cuenta junto con la descripción para orientar tu consulta.</p>
-    </fieldset>
-    <section aria-labelledby="support-process" className="rounded-2xl bg-[#3A9898]/5 border border-[#3A9898]/20 p-5">
-      <h2 id="support-process" className="text-base font-bold text-slate-900">¿Cómo vamos a ayudarte?</h2>
-      <ol className="list-decimal pl-5 space-y-3 mt-3 text-sm text-slate-700 leading-relaxed">
-        <li><strong>Revisamos tu consulta.</strong> Al presionar Recibir ayuda, analizamos lo que nos contás y el impacto que seleccionaste.</li>
-        <li><strong>Te orientamos en esta pantalla.</strong> Vas a recibir una respuesta y pasos concretos. Si falta información, te indicaremos qué datos agregar.</li>
-        <li><strong>Si necesitás atención de una persona, te indicamos cómo seguir.</strong> Podrás guardar el resumen y compartirlo por el canal habitual de soporte de tu empresa, para que revisen tu caso y acuerden con vos cómo continuar.</li>
-      </ol>
-      <p className="text-xs text-slate-500 mt-4">Desde esta página no se envían correos ni se realizan llamadas, y no se crea un ticket automáticamente. La respuesta inicial se muestra aquí; para el contacto personal, utilizá tu canal de soporte habitual.</p>
-    </section>
-    <div className="flex flex-col sm:flex-row-reverse gap-3 sm:items-center sm:justify-between pt-2">
-      <button type="submit" disabled={isLoading || !formData.descripcion.trim()} className="flex items-center justify-center gap-2 bg-[#267B7E] hover:bg-[#206568] text-white px-6 py-3.5 rounded-xl font-semibold text-sm disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
-        {isLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <ArrowRight className="w-4 h-4" />}{isLoading ? 'Estamos revisando tu consulta…' : 'Recibir ayuda'}
-      </button>
-      <button type="button" onClick={onClear} disabled={isLoading} className="flex items-center justify-center gap-2 text-slate-500 hover:text-slate-800 px-3 py-3 text-sm disabled:opacity-50"><RotateCcw className="w-4 h-4" />Borrar y empezar de nuevo</button>
+
+      <div className="border-t border-slate-100 pt-6 space-y-6">
+        {/* Main Description */}
+        <div>
+          <div className="flex items-center justify-between mb-2">
+            <label
+              htmlFor="case-description"
+              className="text-sm font-bold text-slate-800 flex items-center gap-1.5"
+            >
+              <span>Contanos el problema o pegá el mensaje recibido</span>
+              <span className="text-[#F08A78] font-bold">*</span>
+            </label>
+            <span className="text-xs text-slate-400">
+              {formData.descripcion.length} caracteres
+            </span>
+          </div>
+          <p className="text-xs text-slate-500 mb-2.5">
+            Podés pegar el WhatsApp, correo o ticket original del cliente o describir con tus palabras qué ocurrió.
+          </p>
+          <textarea
+            id="case-description"
+            rows={5}
+            value={formData.descripcion}
+            onChange={(e) => onChange({ descripcion: e.target.value })}
+            placeholder="Ejemplo: El cliente nos escribe muy preocupado porque al registrar la venta no le genera el comprobante de pago y le figura saldo pendiente, pero en el banco el dinero ya impactó..."
+            disabled={isLoading}
+            className={`w-full p-4 rounded-2xl text-sm border transition-all resize-y focus:outline-none focus:ring-3 font-normal leading-relaxed ${
+              validationError && isDescriptionEmpty
+                ? 'border-[#F08A78] bg-[#F08A78]/10 focus:ring-[#F08A78]/20'
+                : 'border-slate-300 focus:border-[#3A9898] focus:ring-[#3A9898]/15 bg-white'
+            }`}
+          />
+          {validationError && isDescriptionEmpty && (
+            <p className="mt-2 text-xs text-[#9E3926] flex items-center gap-1.5 font-semibold">
+              <AlertCircle className="w-4 h-4 text-[#F08A78]" />
+              {validationError}
+            </p>
+          )}
+        </div>
+
+        {/* Module Selector */}
+        <div>
+          <label className="text-sm font-bold text-slate-800 flex items-center gap-2 mb-2">
+            <Layers className="w-4 h-4 text-[#3A9898]" />
+            <span>¿En qué parte del negocio ocurre?</span>
+          </label>
+          <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-2">
+            {MODULES.map((mod) => {
+              const selected = formData.modulo === mod.value;
+              return (
+                <button
+                  key={mod.value}
+                  type="button"
+                  onClick={() => onChange({ modulo: mod.value })}
+                  disabled={isLoading}
+                  className={`p-3 rounded-2xl border text-left transition-all cursor-pointer ${
+                    selected
+                      ? 'border-[#3A9898] bg-[#3A9898]/10 text-[#267B7E] ring-2 ring-[#3A9898]/20 font-bold'
+                      : 'border-slate-200 hover:border-slate-300 text-slate-700 bg-white hover:bg-slate-50'
+                  }`}
+                >
+                  <div className="text-xs font-bold leading-tight">{mod.label}</div>
+                  <div className="text-[10px] text-slate-500 mt-1 line-clamp-1">{mod.desc}</div>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* Optional Context Fields */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 p-5 rounded-2xl bg-white border border-slate-200 shadow-2xs">
+          {/* Mensaje de error */}
+          <div>
+            <label className="text-xs font-bold text-slate-700 flex items-center gap-1.5 mb-1.5">
+              <ShieldAlert className="w-3.5 h-3.5 text-slate-400" />
+              <span>Mensaje o cartel de error</span>
+              <span className="text-[10px] font-normal text-slate-400">(Opcional)</span>
+            </label>
+            <input
+              type="text"
+              value={formData.mensajeError || ''}
+              onChange={(e) => onChange({ mensajeError: e.target.value })}
+              placeholder="Ej. ERR-FIN-304 o texto del cartel"
+              disabled={isLoading}
+              className="w-full px-3.5 py-2.5 rounded-xl text-xs sm:text-sm bg-slate-50 border border-slate-200 focus:outline-none focus:border-[#3A9898] focus:bg-white focus:ring-2 focus:ring-[#3A9898]/15"
+            />
+          </div>
+
+          {/* Cantidad de personas afectadas */}
+          <div>
+            <label className="text-xs font-bold text-slate-700 flex items-center gap-1.5 mb-1.5">
+              <Users className="w-3.5 h-3.5 text-slate-400" />
+              <span>¿A cuántas personas afecta?</span>
+              <span className="text-[10px] font-normal text-slate-400">(Opcional)</span>
+            </label>
+            <input
+              type="text"
+              value={formData.usuariosAfectados || ''}
+              onChange={(e) => onChange({ usuariosAfectados: e.target.value })}
+              placeholder="Ej. 1 cliente, Todo el local, 3 personas..."
+              disabled={isLoading}
+              className="w-full px-3.5 py-2.5 rounded-xl text-xs sm:text-sm bg-slate-50 border border-slate-200 focus:outline-none focus:border-[#3A9898] focus:bg-white focus:ring-2 focus:ring-[#3A9898]/15"
+            />
+          </div>
+
+          {/* ¿Existe alternativa? */}
+          <div>
+            <label className="text-xs font-bold text-slate-700 flex items-center gap-1.5 mb-1.5">
+              <HelpCircle className="w-3.5 h-3.5 text-slate-400" />
+              <span>¿Pueden seguir operando?</span>
+              <span className="text-[10px] font-normal text-slate-400">(Opcional)</span>
+            </label>
+            <select
+              value={formData.tieneAlternativa || 'desconocido'}
+              onChange={(e) => onChange({ tieneAlternativa: e.target.value as WorkaroundStatus })}
+              disabled={isLoading}
+              className="w-full px-3.5 py-2.5 rounded-xl text-xs sm:text-sm bg-slate-50 border border-slate-200 focus:outline-none focus:border-[#3A9898] focus:bg-white focus:ring-2 focus:ring-[#3A9898]/15"
+            >
+              <option value="desconocido">No se sabe / Aún por confirmar</option>
+              <option value="si">Sí, tienen una alternativa para seguir</option>
+              <option value="no">No, la tarea está completamente frenada</option>
+            </select>
+          </div>
+        </div>
+
+        {/* Tone Selector */}
+        <div>
+          <label className="text-sm font-bold text-slate-800 flex items-center gap-2 mb-2">
+            <MessageSquare className="w-4 h-4 text-[#3A9898]" />
+            <span>Tono para la respuesta que vamos a sugerir</span>
+          </label>
+          <p className="text-xs text-slate-500 mb-2">Elegí un tono y presioná Analizar caso para generar la respuesta con ese estilo.</p>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            {TONES.map((t) => {
+              const selected = formData.tono === t.value;
+              return (
+                <button
+                  key={t.value}
+                  type="button"
+                  onClick={() => onChange({ tono: t.value })}
+                  disabled={isLoading}
+                  className={`p-3.5 rounded-2xl border text-left transition-all cursor-pointer ${
+                    selected
+                      ? 'border-[#3A9898] bg-[#3A9898]/10 text-[#267B7E] ring-2 ring-[#3A9898]/20'
+                      : 'border-slate-200 hover:border-slate-300 text-slate-700 bg-white hover:bg-slate-50'
+                  }`}
+                >
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-bold">{t.label}</span>
+                    {selected && (
+                      <span className="text-[10px] px-2 py-0.5 rounded-full bg-[#8ADCAE]/40 text-[#267B7E] font-bold">
+                        Elegido
+                      </span>
+                    )}
+                  </div>
+                  <p className="text-[11px] text-slate-500 mt-1">{t.desc}</p>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* Action Buttons */}
+        <div className="flex flex-col-reverse sm:flex-row items-center justify-between gap-3 pt-4 border-t border-slate-100">
+          <button
+            type="button"
+            onClick={onClear}
+            disabled={isLoading}
+            className="w-full sm:w-auto px-5 py-3 rounded-2xl border border-slate-300 hover:bg-slate-100 text-slate-700 font-semibold text-xs sm:text-sm transition-colors flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
+          >
+            <Trash2 className="w-4 h-4 text-slate-500" />
+            <span>Limpiar formulario</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={onSubmit}
+            disabled={isLoading || isDescriptionEmpty}
+            className={`w-full sm:w-auto px-7 py-3 rounded-2xl font-bold text-sm transition-all flex items-center justify-center gap-2.5 shadow-md cursor-pointer ${
+              isLoading || isDescriptionEmpty
+                ? 'bg-slate-300 text-slate-500 cursor-not-allowed shadow-none'
+                : 'bg-[#3A9898] hover:bg-[#267B7E] text-white shadow-[#3A9898]/30 hover:shadow-lg active:scale-[0.99]'
+            }`}
+          >
+            {isLoading ? (
+              <>
+                <Loader2 className="w-4 h-4 animate-spin text-white" />
+                <span>Analizando con criterio Nagora...</span>
+              </>
+            ) : (
+              <>
+                <Sparkles className="w-4 h-4 text-[#8ADCAE]" />
+                <span>Analizar caso</span>
+              </>
+            )}
+          </button>
+        </div>
+      </div>
     </div>
-    {isLoading && <p role="status" className="text-sm text-slate-600">Esto puede demorar unos segundos. Conservamos tu mensaje en el formulario mientras preparamos la respuesta.</p>}
-  </form>
-);
+  );
+};
