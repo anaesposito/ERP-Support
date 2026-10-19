@@ -3,7 +3,7 @@ import { createServer as createViteServer } from 'vite';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import dotenv from 'dotenv';
-import { GoogleGenAI, Type } from '@google/genai';
+import { GoogleGenAI, Type, ThinkingLevel } from '@google/genai';
 import { AnalysisRequest, ERPAnalysisResult } from './src/types/erp';
 import { determineResolution } from './src/utils/resolution';
 
@@ -330,7 +330,7 @@ ${descripcion.trim()}
 Generá el dictamen estructurado en JSON validando cada dimensión, detectando estados emocionales críticos (enojo, urgencia, ambigüedad, reclamo de dinero o legal) y especificando las decisiones que corresponden a una persona autorizada.`;
 
     let response;
-    const modelsToTry = [process.env.GEMINI_MODEL || 'gemini-flash-latest'];
+    const modelsToTry = [process.env.GEMINI_MODEL || 'gemini-3.8-flash'];
     let lastError: unknown = null;
 
     for (const modelName of modelsToTry) {
@@ -342,7 +342,7 @@ Generá el dictamen estructurado en JSON validando cada dimensión, detectando e
             systemInstruction: SYSTEM_INSTRUCTION,
             responseMimeType: 'application/json',
             responseSchema: erpResponseSchema,
-            temperature: 0.2,
+            thinkingConfig: { thinkingLevel: ThinkingLevel.LOW },
           },
         });
         if (response?.text) {
@@ -404,10 +404,21 @@ Generá el dictamen estructurado en JSON validando cada dimensión, detectando e
       data: parsedResult,
     });
   } catch (err: unknown) {
-    const errorMessage = err instanceof Error ? err.message : 'Error desconocido al procesar el caso';
-    return res.status(500).json({
-      error: 'ANALYSIS_ERROR',
-      message: `Ocurrió un error al procesar el análisis: ${errorMessage}`,
+    const detail = err instanceof Error ? err.message : String(err);
+    const status = typeof err === 'object' && err !== null && 'status' in err ? Number(err.status) : 0;
+    const timeout = status === 504 || /deadline|timed? ?out|timeout|aborted/i.test(detail);
+    const quota = status === 429 || /RESOURCE_EXHAUSTED|quota|429/i.test(detail);
+    const unavailable = status === 503 || /UNAVAILABLE|overloaded|503/i.test(detail);
+    const code = timeout ? 'ANALYSIS_TIMEOUT' : quota ? 'AI_QUOTA_EXCEEDED' : unavailable ? 'AI_UNAVAILABLE' : 'ANALYSIS_ERROR';
+    // Log diagnostic categories only, never customer messages, credentials or raw provider payloads.
+    console.error('[analysis]', JSON.stringify({code, providerStatus: status || undefined}));
+    return res.status(timeout ? 504 : quota ? 429 : unavailable ? 503 : 502).json({
+      error: code,
+      message: timeout
+        ? 'El servicio de IA no respondió a tiempo. Tu mensaje sigue en el formulario; volvé a intentar en unos instantes.'
+        : quota ? 'El servicio de IA alcanzó su límite de uso. No es un problema de tu mensaje; intentá más tarde.'
+        : unavailable ? 'El servicio de IA está temporalmente ocupado. Conservamos tu mensaje para que puedas reintentarlo.'
+        : 'No pudimos completar el análisis con el servicio de IA. Tu mensaje sigue en el formulario; intentá nuevamente.',
     });
   }
 });
